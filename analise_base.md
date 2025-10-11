@@ -45,116 +45,29 @@ A seguir, apresentamos a descrição das variáveis que compõem a tabela:
 | **YearsSinceLastPromotion** | Anos desde a última promoção                                                                                 |
 | **YearsWithCurrManager**    | Anos trabalhando com o gerente atual                                                                         |
 
-2.1.2 🔵Limpar dados
+### 2.1.2 🔵 Limpar dados
 
 📌 A limpeza de dados é uma etapa essencial na preparação de um modelo de machine learning. Seu objetivo é assegurar a qualidade e a consistência das informações, reduzindo ruídos e distorções que possam comprometer a precisão preditiva do modelo.
 
 🔎 **Valores Nulos**
 
-Foram identificados valores ausentes nas colunas `NumCompaniesWorked` (19) e `TotalWorkingYears` (9).
+Foram identificados valores ausentes nas colunas NumCompaniesWorked (19) e TotalWorkingYears (9).
 
-✅ Ação tomada: Preenchimento com a **mediana**  
+✅ Ação: Preenchimento com a mediana
 
 💡 Justificativa: Valores extremos nas colunas poderiam distorcer a média. A mediana é mais robusta nesse caso.
 
 🔎 **Valores Duplicados**
 
-- Nenhuma linha duplicada foi encontrada.
+Nenhuma linha duplicada foi encontrada.
 
 ✅ Ação: Nenhuma necessária.
 
 🔎 **Valores Fora do Escopo da Análise**
 
-As variáveis `Over18`, `EmployeeCount` e `StandardHours` foram identificadas como redundantes por apresentarem valores constantes em todos os registros.
+A variável `Over18` forai identificada como redundante.
 
-✅ Ação: Remoção das variáveis `Over18`, `EmployeeCount` e `StandardHours`.
-
-💡 Justificativa: A remoção dessas colunas de baixa ou nenhuma variância evita ruído no modelo.
-
-🔎 **Valores Discrepantes em Variáveis Categóricas**
-
-📌 Para treinar modelos de machine learning, todas as variáveis devem estar no formato numérico.
-
-✅ Ação: Aplicado `Label Encoding` com `LabelEncoder` da biblioteca `sklearn.preprocessing`.
-
-Variáveis transformadas (total de 9):
-
-- Attrition
-
-- BusinessTravel
-
-- Department
-
-- EducationField
-
-- Gender
-
-- JobRole
-
-- MaritalStatus
-
-- AgeGroup (Nova variável)
-
-- DistanceCategory (Nova variável)
-
-💡 Justificativa: `Label Encoding` é apropriado para variáveis ordinais ou nominais em modelos baseados em árvores (como Decision Trees e Random Forests).
-
-Seu relatório está muito bem estruturado e detalhado, especialmente as seções de Feature Engineering e a Divisão Treino/Teste. Você está no caminho certo!
-
-Há apenas um pequeno ajuste de ordem e dois detalhes a corrigir na seção de Limpeza de Dados para que o fluxo lógico do relatório corresponda à ordem de execução do código que você validou.
-
-Correções Essenciais no Fluxo do Relatório
-O único problema no seu texto atual é que a Criação de Novas Variáveis (2.1.4) aparece depois da Codificação (2.1.2). No seu código, você criou as novas variáveis antes de codificá-las.
-
-1. Reorganização das Seções
-A ordem lógica e correta (que você executou no código) é:
-
-Limpar Dados (Nulos, Remoção, Outliers)
-
-Criar Novas Variáveis (Feature Engineering)
-
-Codificar Variáveis Categóricas (incluindo as novas)
-
-Dividir a Base
-
-2. Edição do Bloco de Limpeza (2.1.2)
-A seção de Limpeza precisa estar completa.
-
-Seção do Relatório	Sua Edição	Correção Necessária
-Limpar Dados	Você inseriu a seção "Codificar variáveis categóricas" dentro da subseção "Limpar Dados".	O bloco de Codificação deve ser um item separado, pois a limpeza em si (nulos/remoção) ocorre antes.
-Outliers	As variáveis que foram removidas (EmployeeCount, StandardHours) ainda estão listadas na tabela de variáveis numéricas.	Devem ser removidas da lista, pois não existem mais no df.
-
-Exportar para as Planilhas
-✅ Versão Final e Corrigida
-Abaixo está o seu relatório com a ordem corrigida (2.1.3 e 2.1.4 foram trocadas) e as informações consolidadas.
-
-(O restante do seu texto está perfeito e foi mantido).
-
-🟦 2.1 Processar e preparar base de dados
-[...] (O texto das seções 1 e 2.1.1 Conectar/importar dados é mantido)
-
-2.1.2 🔵 Limpar dados
-📌 A limpeza de dados é uma etapa essencial na preparação de um modelo de machine learning. Seu objetivo é assegurar a qualidade e a consistência das informações, reduzindo ruídos e distorções que possam comprometer a precisão preditiva do modelo.
-
-🔎 Valores Nulos
-
-Foram identificados valores ausentes nas colunas NumCompaniesWorked (19) e TotalWorkingYears (9).
-
-✅ Ação tomada: Preenchimento com a mediana
-
-💡 Justificativa: Valores extremos nas colunas poderiam distorcer a média. A mediana é mais robusta nesse caso.
-
-🔎 Valores Duplicados
-
-Nenhuma linha duplicada foi encontrada.
-
-✅ Ação: Nenhuma necessária.
-
-🔎 Valores Fora do Escopo da Análise
-
-As variáveis Over18, EmployeeCount e StandardHours foram identificadas como redundantes por apresentarem valores constantes em todos os registros.
-
-✅ Ação: Remoção das variáveis Over18, EmployeeCount e StandardHours.
+✅ Ação: Remoção das variáveis Over18.
 
 💡 Justificativa: A remoção dessas colunas de baixa ou nenhuma variância evita ruído no modelo.
 
@@ -167,35 +80,63 @@ Foi identificado desbalanceamento na variável-alvo Attrition:
 
 ✅ Ação futura: Aplicar técnicas de balanceamento durante o treinamento do modelo (como SMOTE ou ajuste de pesos).
 
-🔎 **Valores Discrepantes (outliers) em variáveis Numéricas**
+🔎 **Analise das variáveis Categoricas**
 
-Utilizou-se o **IQR (Intervalo Interquartil)** para identificar possíveis outliers em variáveis numéricas.
+A base de dados possui 8 variáveis categóricas que representam atributos qualitativos dos funcionários, fundamentais para a análise preditiva da rotatividade (Attrition). Estas variáveis incluem dados sobre perfil, função, departamento, estado civil, entre outros.
 
-##### Variáveis sem outliers:
+**Consistência**: Foi realizada a inspeção dos valores únicos para garantir que não existam dados inválidos ou inconsistentes.
 
-- `Age`
-- `DistanceFromHome`
-- `Education`
-- `EmployeeCount`
-- `EmployeeID`
-- `JobLevel`
-- `PercentSalaryHike`
-- `StandardHours`
+**Nulos**: Não foram encontrados valores ausentes nas variáveis categóricas.
 
-##### Variáveis com maior incidência de outliers:
+**Balanceamento**: A variável alvo Attrition apresenta desbalanceamento (16% sim, 84% não), a ser tratado na fase de modelagem.
 
-| Variável                  | Outliers Identificados | Observações                               |
-| ------------------------- | ---------------------- | ------------------------------------------ |
-| `MonthlyIncome`           | 342                    | Valores muito altos                        |
-| `NumCompaniesWorked`      | 156                    | Muitos registros no limite (9)             |
-| `StockOptionLevel`        | 255                    | Concentração no valor máximo               |
-| `TotalWorkingYears`       | 189                    | Experiência elevada                        |
-| `TrainingTimesLastYear`   | 714                    | Concentração no valor máximo (6)           |
-| `YearsAtCompany`          | 312                    | Registros com até 40 anos na empresa       |
-| `YearsSinceLastPromotion` | 321                    | Funcionários sem promoção por 15 anos      |
-| `YearsWithCurrManager`    | 42                     | Até 17 anos com o mesmo gerente            |
+**Codificação para Modelagem**
 
-✅ Ação: Ainda em análise. Pode-se considerar técnicas como normalização ou remoção seletiva.
+Para que os algoritmos de machine learning possam processar essas variáveis, todas foram convertidas para formato numérico via Label Encoding, utilizando o LabelEncoder do sklearn.preprocessing.
+
+- **Motivação para Label Encoding:**
+
+ - Compatível com modelos baseados em árvores, como XGBoost, que conseguem interpretar códigos numéricos mesmo que representem categorias nominais.
+
+ - Evita aumento no número de variáveis (como ocorreria no one-hot encoding), mantendo a dimensionalidade controlada.
+
+- *Variáveis Codificadas*:
+
+- Attrition, BusinessTravel, Department, EducationField, Gender, JobRole, MaritalStatus, AgeGroup, DistanceCategory
+
+**Impacto da Codificação**
+
+- A codificação viabiliza o uso do conjunto completo de dados no modelo XGBoost.
+
+- Garante que as variáveis categóricas contribuam com sua informação sem causar erros na fase de treinamento.
+
+🔎 **Analise das variáveis Numéricas (outliers)**
+
+- Métodos utilizados:
+
+ - Detecção por desvio padrão (±3σ)
+ - Detecção pelo método do Intervalo Interquartil (IQR)
+
+Resumo dos resultados:
+
+| Variável                | Média    | Desvio Padrão | Limite Inferior (IQR) | Limite Superior (IQR) | Qtde de Outliers (IQR) | Observações                                                              |
+| ----------------------- | -------- | ------------- | --------------------- | --------------------- | ---------------------- | ------------------------------------------------------------------------ |
+| MonthlyIncome           | 65029.31 | 47068.89      | -52925.00             | 165835.00             | 342                    | Presença significativa de outliers em salários muito altos               |
+| NumCompaniesWorked      | 2.69     | 2.50          | -3.50                 | 8.50                  | 156                    | Alguns funcionários com histórico de trabalho extenso em várias empresas |
+| StockOptionLevel        | 0.79     | 0.85          | -1.50                 | 2.50                  | 255                    | Possibilidade de valores máximos em opções de ações                      |
+| TotalWorkingYears       | 11.28    | 7.78          | -7.50                 | 28.50                 | 189                    | Outliers indicam funcionários com experiência muito elevada              |
+| TrainingTimesLastYear   | 2.80     | 1.29          | 0.50                  | 4.50                  | 714                    | Grande variação na quantidade de treinamentos realizados                 |
+| YearsAtCompany          | 7.01     | 6.13          | -6.00                 | 18.00                 | 312                    | Funcionários com longo tempo de casa                                     |
+| YearsSinceLastPromotion | 2.19     | 3.22          | -4.50                 | 7.50                  | 321                    | Alguns funcionários sem promoções há bastante tempo                      |
+| YearsWithCurrManager    | 4.12     | 3.57          | -5.50                 | 14.50                 | 42                     | Variabilidade na relação com o gestor atual                              |
+
+✅ Ação: Durante a análise exploratória dos dados, foram identificados valores considerados outliers em algumas variáveis numéricas, tais como MonthlyIncome, TotalWorkingYears, TrainingTimesLastYear, entre outras.
+
+No entanto, para o desenvolvimento do modelo preditivo, optamos por utilizar o algoritmo XGBoost, que é baseado em árvores de decisão e reconhecidamente robusto à presença de outliers. Diferentemente de modelos lineares ou baseados em distância, o XGBoost não é significativamente afetado por valores extremos, pois utiliza regras de divisão para particionar os dados.
+
+Dessa forma, decidimos manter as variáveis numéricas em sua forma original, sem realizar qualquer tratamento específico para outliers, preservando a integridade dos dados e evitando possíveis distorções decorrentes de transformações ou remoção de pontos.
+
+Essa abordagem visa garantir que o modelo possa capturar padrões importantes, incluindo informações relevantes que os valores extremos podem representar no contexto da rotatividade de funcionários.
 
 🔎  **Verificar os tipos de dados**
 
@@ -234,25 +175,6 @@ Foi utilizado o comando `df.dtypes` para listar os tipos de dados.
 | `JobRole`        | Cargo ocupado                             |
 | `MaritalStatus`  | Estado civil                              |
 
-### 🔎 Codificar variáveis categóricas
-
-📌 Para treinar modelos de machine learning, todas as variáveis devem estar no formato numérico.
-
-✅ Ação: Aplicado **Label Encoding** com `LabelEncoder` da biblioteca `sklearn.preprocessing`. 
- - Foi aplicado LabelEncoder nas variáveis categóricas conforme orientação do guia, garantindo que o modelo consiga processar os dados textuais.
-
-#### Variáveis transformadas:
-
-- `Attrition`
-- `BusinessTravel`
-- `Department`
-- `EducationField`
-- `Gender`
-- `JobRole`
-- `MaritalStatus`
-
-💡 Justificativa: Label Encoding é apropriado para variáveis ordinais ou nominais em modelos baseados em árvores (como Decision Trees e Random Forests).
-
 ### 2.1.3 🔵 Dividir a base em treino e teste
 
 📌 O objetivo desta etapa foi dividir o conjunto de dados em duas partes: uma para o treinamento do modelo (80%) e outra para a sua validação (20%), garantindo reprodutibilidade e a mesma proporção da variável alvo em ambos os conjuntos.
@@ -274,7 +196,6 @@ Foi utilizado o comando `df.dtypes` para listar os tipos de dados.
 | Teste        | ~83,9%         | ~16,1%          |
 
 💡 Garantir a proporcionalidade é fundamental para evitar viés na avaliação do modelo e assegurar que ele generalize bem para novos dados.
-
 
 ### 2.1.4 🔵 Criar novas variáveis (Feature Engineering)
 

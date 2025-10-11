@@ -32,10 +32,6 @@ print(df[['NumCompaniesWorked', 'TotalWorkingYears']].isnull().sum())
 
 if 'Over18' in df.columns:
     df.drop('Over18', axis=1, inplace=True)
-if 'EmployeeCount' in df.columns: 
-    df.drop('EmployeeCount', axis=1, inplace=True)
-if 'StandardHours' in df.columns: 
-    df.drop('StandardHours', axis=1, inplace=True) 
 
 # ----------------------------------------------------
 # 3. CRIAÇÃO DE NOVAS VARIÁVEIS (FEATURE ENGINEERING)
