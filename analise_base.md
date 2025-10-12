@@ -1,20 +1,12 @@
 ## 🟦 2.1 Processar e preparar base de dados
 
-📌 O objetivo principal desta etapa foi inspecionar, limpar, transformar e estruturar os dados para que estivessem prontos para o treinamento do modelo de machine learning.
+📌 O objetivo principal desta etapa foi inspecionar, limpar, transformar e estruturar o conjunto de dados para que estivesse pronto para o treinamento do modelo de Machine Learning.
 
 ### 2.1.1 🔵 Conectar/importar dados para outras ferramentas
 
-Nesta etapa inicial, realizamos a conexão e importação dos dados para viabilizar a análise exploratória e o pré-processamento. Para isso, utilizamos a linguagem **Python** e a biblioteca **pandas**, amplamente empregada para manipulação e análise de dados.
+Nesta etapa inicial, o arquivo rh_data.csv foi importado utilizando a biblioteca pandas.
 
-O arquivo denominado `rh_data.csv` está localizado no diretório:
-
-```
-C:\Users\Thais Lira\Documents\rota-complementar-Machine-learning
-```
-
-O arquivo foi carregado com sucesso em um DataFrame chamado `df`, permitindo a manipulação e exploração das informações.
-
-- 📊 A base contém **24 variáveis (colunas)** e **4.410 registros (linhas)**, cada um representando um funcionário distinto.
+📊 A base original continha 24 variáveis (colunas) e 4.410 registros (linhas), cada um representando um funcionário.
 
 A seguir, apresentamos a descrição das variáveis que compõem a tabela:
 
@@ -49,13 +41,22 @@ A seguir, apresentamos a descrição das variáveis que compõem a tabela:
 
 📌 A limpeza de dados é uma etapa essencial na preparação de um modelo de machine learning. Seu objetivo é assegurar a qualidade e a consistência das informações, reduzindo ruídos e distorções que possam comprometer a precisão preditiva do modelo.
 
+✅ Variável-Alvo
+
+| Variável    | Descrição                              |
+| ----------- | -------------------------------------- |
+| `Attrition` | Variável-alvo (0 = não saiu, 1 = saiu) |
+
 🔎 **Valores Nulos**
 
-Foram identificados valores ausentes nas colunas NumCompaniesWorked (19) e TotalWorkingYears (9).
+Foram identificados valores ausentes nas colunas:
 
-✅ Ação: Preenchimento com a mediana
+| Coluna             | Qtde. Nulos |
+| ------------------ | ----------- |
+| NumCompaniesWorked | 19          |
+| TotalWorkingYears  | 9           |
 
-💡 Justificativa: Valores extremos nas colunas poderiam distorcer a média. A mediana é mais robusta nesse caso.
+✅ Ação: preenchimento dos valores nulos com a mediana de cada coluna, uma vez que a mediana é robusta contra valores extremos e representa melhor a tendência central dos dados neste contexto.
 
 🔎 **Valores Duplicados**
 
@@ -65,50 +66,33 @@ Nenhuma linha duplicada foi encontrada.
 
 🔎 **Valores Fora do Escopo da Análise**
 
-A variável `Over18` forai identificada como redundante.
+Quatro colunas foram removidas por não agregarem valor preditivo ou por serem constantes:
 
-✅ Ação: Remoção das variáveis Over18.
+| Variável        | Justificativa                                  |
+| --------------- | ---------------------------------------------- |
+| `EmployeeCount` | Constante (valor fixo)                         |
+| `StandardHours` | Constante (valor fixo)                         |
+| `EmployeeID`    | Identificador único, sem valor preditivo       |
+| `Over18`        | Constante (todos os registros indicavam 'Sim') |
 
-💡 Justificativa: A remoção dessas colunas de baixa ou nenhuma variância evita ruído no modelo.
+✅ Ação: Remoção da coluna `Over18`, `EmployeeID`, `StandardHours`, `EmployeeCount` para evitar ruídos e redundância no modelo.
 
-Foi identificado desbalanceamento na variável-alvo Attrition:
+🔎 **Análise do Desbalanceamento da Variável-Alvo (Attrition)**
 
-| Classe | Quantidade | Percentual |
-| :--- | :--- | :--- |
-| No | 3.699 | 84% |
-| Yes | 711 | 16% |
+A variável Attrition está significativamente desbalanceada, o que impacta a escolha de métricas e abordagens.
 
-✅ Ação futura: Aplicar técnicas de balanceamento durante o treinamento do modelo (como SMOTE ou ajuste de pesos).
+| Classe  | Quantidade | Percentual |
+| ------- | ---------- | ---------- |
+| Não (0) | 3.699      | 83.88%     |
+| Sim (1) | 711        | 16.12%     |
+
+✅ Conclusão: A rotatividade é uma classe minoritária. Portanto, métricas como F1-Score e Recall devem ser priorizadas, e técnicas de balanceamento (pesos ou sampling) podem ser necessárias na fase de modelagem.
 
 🔎 **Analise das variáveis Categoricas**
 
-A base de dados possui 8 variáveis categóricas que representam atributos qualitativos dos funcionários, fundamentais para a análise preditiva da rotatividade (Attrition). Estas variáveis incluem dados sobre perfil, função, departamento, estado civil, entre outros.
+A base contém 8 variáveis categóricas essenciais para a análise da rotatividade. Todas passaram por verificação de consistência e ausência de valores nulos.
 
-**Consistência**: Foi realizada a inspeção dos valores únicos para garantir que não existam dados inválidos ou inconsistentes.
-
-**Nulos**: Não foram encontrados valores ausentes nas variáveis categóricas.
-
-**Balanceamento**: A variável alvo Attrition apresenta desbalanceamento (16% sim, 84% não), a ser tratado na fase de modelagem.
-
-**Codificação para Modelagem**
-
-Para que os algoritmos de machine learning possam processar essas variáveis, todas foram convertidas para formato numérico via Label Encoding, utilizando o LabelEncoder do sklearn.preprocessing.
-
-- **Motivação para Label Encoding:**
-
- - Compatível com modelos baseados em árvores, como XGBoost, que conseguem interpretar códigos numéricos mesmo que representem categorias nominais.
-
- - Evita aumento no número de variáveis (como ocorreria no one-hot encoding), mantendo a dimensionalidade controlada.
-
-- *Variáveis Codificadas*:
-
-- Attrition, BusinessTravel, Department, EducationField, Gender, JobRole, MaritalStatus, AgeGroup, DistanceCategory
-
-**Impacto da Codificação**
-
-- A codificação viabiliza o uso do conjunto completo de dados no modelo XGBoost.
-
-- Garante que as variáveis categóricas contribuam com sua informação sem causar erros na fase de treinamento.
+Todas as variáveis categóricas foram convertidas para formato numérico utilizando Label Encoding (LabelEncoder do scikit-learn).
 
 🔎 **Analise das variáveis Numéricas (outliers)**
 
@@ -177,25 +161,24 @@ Foi utilizado o comando `df.dtypes` para listar os tipos de dados.
 
 ### 2.1.3 🔵 Dividir a base em treino e teste
 
-📌 O objetivo desta etapa foi dividir o conjunto de dados em duas partes: uma para o treinamento do modelo (80%) e outra para a sua validação (20%), garantindo reprodutibilidade e a mesma proporção da variável alvo em ambos os conjuntos.
+Essa etapa garante avaliação do modelo em dados nunca vistos, simulando seu desempenho em produção.
 
-✅ Técnicas utilizadas:
+✅ Técnicas Utilizadas
 
-- **Função:** `train_test_split` do pacote `sklearn.model_selection`
-- **Parâmetros definidos:**
-  - `test_size=0.2`: 20% dos dados para teste
-  - `random_state=42`: garante reprodutibilidade
-  - `stratify=y`: mantém a proporção da variável-alvo (`Attrition`)
+- Divisão: train_test_split (80% Treino, 20% Teste)
 
-✅ Resultado:
+- Reprodutibilidade: random_state=42
 
-| Conjunto     | Proporção "No" | Proporção "Yes" |
-|--------------|----------------|-----------------|
-| Geral        | ~84%           | ~16%            |
-| Treinamento  | ~84%           | ~16%            |
-| Teste        | ~83,9%         | ~16,1%          |
+- Estratificação: stratify=y, mantendo a proporção da variável alvo.
 
-💡 Garantir a proporcionalidade é fundamental para evitar viés na avaliação do modelo e assegurar que ele generalize bem para novos dados.
+✅ Resultado da Divisão
+
+| Conjunto    | Proporção "Não" | Proporção "Sim" |
+| ----------- | --------------- | --------------- |
+| Treinamento | 83.87%          | 16.13%          |
+| Teste       | 83.90%          | 16.10%          |
+
+💡 Conclusão: A estratificação foi bem-sucedida, garantindo que o conjunto de teste seja representativo do conjunto geral.
 
 ### 2.1.4 🔵 Criar novas variáveis (Feature Engineering)
 
