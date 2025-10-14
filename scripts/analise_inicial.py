@@ -14,14 +14,14 @@ import numpy as np
 df = pd.read_csv(r'C:\Users\Thais Lira\Documents\rota-complementar-Machine-learning\dados\rh_data.csv')
 
 # ----------------------------------------------------
-# 1. IDENTIFICAÇÃO DE NULOS
+# 1. IDENTIFICAÇÃO DE VALORES NULOS
 # ----------------------------------------------------
 
 print("\n🔍 Verificando valores nulos por coluna:\n")
 print(df.isnull().sum())
 
 # ----------------------------------------------------
-# 2. IDENTIFICAÇÃO DE DUPLICADOS
+# 2. IDENTIFICAÇÃO DE DADOS DUPLICADOS
 # ----------------------------------------------------
 
 duplicados = df.duplicated().sum()
@@ -41,7 +41,7 @@ for col in categorical_cols:
     print("-" * 40)
 
 # ----------------------------------------------------
-# 4. ANÁLISE DE VARIÁVEIS NUMÉRICAS E OUTLIERS
+# 4. ANÁLISE DE VARIÁVEIS NUMÉRICAS E DETECÇÃO DE OUTLIERS
 # ----------------------------------------------------
 
 # Seleciona colunas numéricas
@@ -74,7 +74,6 @@ def detectar_outliers(coluna):
     print(f"  - Limites (IQR): {limite_inferior_iqr:.2f} a {limite_superior_iqr:.2f}")
     print(f"  - Outliers (IQR): {len(outliers_iqr)} valores")
 
-# Aplica a função em todas as colunas numéricas
 print("\n📉 Análise de Outliers nas variáveis numéricas:\n")
 for coluna in numericas.columns:
     detectar_outliers(coluna)

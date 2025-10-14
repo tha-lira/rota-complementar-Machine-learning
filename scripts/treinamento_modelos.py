@@ -1,45 +1,38 @@
-# --------------------
-# 🔹 1. Importação de Bibliotecas
-# --------------------
 import pandas as pd
-import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
-from sklearn.feature_selection import SelectKBest, f_classif
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
 from xgboost import XGBClassifier
-from sklearn.metrics import classification_report, accuracy_score
-import matplotlib.pyplot as plt
+from sklearn.metrics import accuracy_score, classification_report, confusion_matrix, roc_auc_score
+from imblearn.over_sampling import SMOTE
 
-# Definindo a SEED para reprodutibilidade
-SEED = 42
+# ----------------------------------------------------
+# 0. CARREGAR DADOS
+# ----------------------------------------------------
 
-# --------------------
-# 🔹 2. Importação e Limpeza Inicial dos Dados
-# --------------------
-# Nota: Substitua pelo seu caminho de arquivo se não estiver no Colab/ambiente configurado
-df = pd.read_csv('dados/rh_data.csv') 
+df = pd.read_csv(r'C:\Users\Thais Lira\Documents\rota-complementar-Machine-learning\dados\rh_data.csv')
 
-# Tratamento de Nulos (Imputação de Mediana, robusta contra outliers)
+# ----------------------------------------------------
+# 1. TRATAMENTO DE NULOS (IMPUTAÇÃO DE MEDIANA)
+# ----------------------------------------------------
+
 df['NumCompaniesWorked'] = df['NumCompaniesWorked'].fillna(df['NumCompaniesWorked'].median())
 df['TotalWorkingYears'] = df['TotalWorkingYears'].fillna(df['TotalWorkingYears'].median())
+print("Verificação de Nulos após Preenchimento:")
+print(df[['NumCompaniesWorked', 'TotalWorkingYears']].isnull().sum())
 
-# Remoção de Colunas Inúteis/Constantes/ID
-colunas_remover = [
-    'EmployeeCount',    # Constante (valor 1)
-    'StandardHours',    # Constante (valor 8)
-    'Over18',           # Constante (valor 'Y')
-    'EmployeeID'        # Identificador Único
-]
-df_clean = df.drop(colunas_remover, axis=1, errors='ignore')
-print(f"Colunas removidas: {colunas_remover}")
-print(f"Número de colunas após limpeza: {df_clean.shape[1]}")
+# ----------------------------------------------------
+# 2. REMOÇÃO DE COLUNAS
+# ----------------------------------------------------
 
+if 'Over18' in df.columns:
+    df.drop('Over18', axis=1, inplace=True)
 
-# --------------------
-# 🔹 3. Feature Engineering (Criação de Novas Variáveis)
-# --------------------
+# ----------------------------------------------------
+# 3. CRIAÇÃO DE NOVAS VARIÁVEIS (FEATURE ENGINEERING)
+# ----------------------------------------------------
+
 def faixa_idade(idade):
     if idade <= 30:
         return 'Jovem'
@@ -48,112 +41,102 @@ def faixa_idade(idade):
     else:
         return 'Sênior'
 
-df_clean['AgeGroup'] = df_clean['Age'].apply(faixa_idade)
+df['AgeGroup'] = df['Age'].apply(faixa_idade)
+dist_bins = [0, 5, 15, df['DistanceFromHome'].max() + 1] 
+dist_labels = ['Perto', 'Médio', 'Longe']
+df['DistanceCategory'] = pd.cut(df['DistanceFromHome'], bins=dist_bins, labels=dist_labels, include_lowest=True)
+df['ManyCompaniesWorked'] = (df['NumCompaniesWorked'] > 3).astype(int)
 
-# Criação da Razão de Experiência na Empresa (novo indicador)
-df_clean['ExperienceRatio'] = df_clean['YearsAtCompany'] / (df_clean['TotalWorkingYears'] + 1e-6)
+print("\nNovas Variáveis Criadas (Amostra):")
+print(df[['Age', 'AgeGroup', 'DistanceFromHome', 'DistanceCategory', 'NumCompaniesWorked', 'ManyCompaniesWorked']].sample(5))
 
+# ----------------------------------------------------
+# 4. CODIFICAÇÃO DE VARIÁVEIS CATEGÓRICAS
+# ----------------------------------------------------
 
-# --------------------
-# 🔹 4. Codificação de Variáveis Categóricas (Label Encoding)
-# --------------------
 le = LabelEncoder()
-for col in df_clean.select_dtypes(include=['object', 'category']).columns:
-    df_clean[col] = le.fit_transform(df_clean[col])
+categorical_columns = [
+    'BusinessTravel', 'Department', 'EducationField', 'Gender',
+    'JobRole', 'MaritalStatus', 'Attrition',
+    'AgeGroup', 
+    'DistanceCategory'
+]
 
+for col in categorical_columns:
+    if df[col].dtype in ['object', 'category']:
+        df[col] = le.fit_transform(df[col])
 
-# --------------------
-# 🔹 5. Preparação Final e Divisão em Treino/Teste
-# --------------------
+# ----------------------------------------------------
+# 4.5. VERIFICAÇÃO FINAL: DATAFRAME LIMPO E CODIFICADO
+# ----------------------------------------------------
 
-# Preparação do X final (Features)
-# Remove Age e TotalWorkingYears originais, pois usamos suas versões transformadas (AgeGroup, ExperienceRatio)
-X = df_clean.drop(['Attrition', 'Age', 'TotalWorkingYears'], axis=1)
-y = df_clean['Attrition']
+print("\n--- ✅ DATAFRAME FINALMENTE LIMPO E CODIFICADO (df.info()) ---")
+df.info() 
 
-# Divisão Estratificada (mantém a proporção da variável resposta)
+#-------------------------------------------------------------------------------------------
+
+# Codificar variáveis categóricas importantes
+le = LabelEncoder()
+for col in ['MaritalStatus']:
+    df[col] = le.fit_transform(df[col])
+
+# Variáveis selecionadas para previsão
+features = ['Age', 'TotalWorkingYears', 'MaritalStatus', 'YearsWithCurrManager', 'NumCompaniesWorked']
+X = df[features]
+y = df['Attrition']
+
+# Balanceamento com SMOTE
+smote = SMOTE(random_state=42)
+X_resampled, y_resampled = smote.fit_resample(X, y)
+
+# Separação em treino e teste
 X_train, X_test, y_train, y_test = train_test_split(
-    X, y, test_size=0.2, random_state=SEED, stratify=y
+    X_resampled, y_resampled, test_size=0.3, random_state=42, stratify=y_resampled
 )
 
-print("\nDistribuição Attrition no Treino:", y_train.value_counts(normalize=True))
+# Modelo Regressão Logística
+logreg = LogisticRegression(max_iter=1000)
+logreg.fit(X_train, y_train)
+y_pred_logreg = logreg.predict(X_test)
+y_prob_logreg = logreg.predict_proba(X_test)[:, 1]
 
+print("🔷 Regressão Logística:")
+print(classification_report(y_test, y_pred_logreg))
+print("Matriz de Confusão:\n", confusion_matrix(y_test, y_pred_logreg))
+print(f"Acurácia: {accuracy_score(y_test, y_pred_logreg)*100:.2f}%")
+print(f"AUC-ROC: {roc_auc_score(y_test, y_prob_logreg):.3f}\n")
 
-# --------------------
-# 🔹 6. Seleção de Variáveis (Aplicada após a divisão)
-# --------------------
-# Seleciona as 15 melhores features com base na estatística F
-selector = SelectKBest(score_func=f_classif, k=15)
+# Modelo Random Forest
+rf = RandomForestClassifier(random_state=42)
+rf.fit(X_train, y_train)
+y_pred_rf = rf.predict(X_test)
+y_prob_rf = rf.predict_proba(X_test)[:, 1]
 
-# A seleção é feita apenas no conjunto de TREINO para evitar vazamento
-X_train_selected = selector.fit_transform(X_train, y_train)
-X_test_selected = selector.transform(X_test)
+print("🔷 Random Forest:")
+print(classification_report(y_test, y_pred_rf))
+print("Matriz de Confusão:\n", confusion_matrix(y_test, y_pred_rf))
+print(f"Acurácia: {accuracy_score(y_test, y_pred_rf)*100:.2f}%")
+print(f"AUC-ROC: {roc_auc_score(y_test, y_prob_rf):.3f}\n")
 
-# Obtendo os nomes das features selecionadas (para análise final)
-feature_names = X.columns[selector.get_support()]
-print("\nTop Features Selecionadas (K=15):", feature_names.tolist())
+# Modelo XGBoost
+xgb = XGBClassifier(use_label_encoder=False, eval_metric='logloss', random_state=42)
+xgb.fit(X_train, y_train)
+y_pred_xgb = xgb.predict(X_test)
+y_prob_xgb = xgb.predict_proba(X_test)[:, 1]
 
+print("🔷 XGBoost:")
+print(classification_report(y_test, y_pred_xgb))
+print("Matriz de Confusão:\n", confusion_matrix(y_test, y_pred_xgb))
+print(f"Acurácia: {accuracy_score(y_test, y_pred_xgb)*100:.2f}%")
+print(f"AUC-ROC: {roc_auc_score(y_test, y_prob_xgb):.3f}\n")
 
-# --------------------
-# 🔹 7. Treinamento e Comparação de Modelos (2.3.1)
-# --------------------
-models = {
-    "Logistic Regression": LogisticRegression(max_iter=1000, random_state=SEED),
-    "Random Forest": RandomForestClassifier(random_state=SEED),
-    "XGBoost": XGBClassifier(use_label_encoder=False, eval_metric='logloss', random_state=SEED)
-}
+# Comparação resumida
+resultados = [
+    {"Modelo": "Regressão Logística", "Accuracy": accuracy_score(y_test, y_pred_logreg), "ROC_AUC": roc_auc_score(y_test, y_prob_logreg)},
+    {"Modelo": "Random Forest", "Accuracy": accuracy_score(y_test, y_pred_rf), "ROC_AUC": roc_auc_score(y_test, y_prob_rf)},
+    {"Modelo": "XGBoost", "Accuracy": accuracy_score(y_test, y_pred_xgb), "ROC_AUC": roc_auc_score(y_test, y_prob_xgb)},
+]
 
-results = {}
-
-for name, model in models.items():
-    model.fit(X_train_selected, y_train)
-    y_pred = model.predict(X_test_selected)
-    
-    report = classification_report(y_test, y_pred, output_dict=True)
-    
-    # Foco no F1-Score da Classe 1 (Attrition=Yes)
-    f1_score_attrition = report['1']['f1-score']
-    accuracy = report['accuracy']
-    
-    results[name] = {'Accuracy': accuracy, 'F1-Attrition': f1_score_attrition, 'Model': model}
-
-    print(f"\n--- 🧠 Modelo: {name} ---")
-    print(f"Accuracy Geral: {accuracy:.4f}")
-    print(f"F1-Score (Attrition=Yes): {f1_score_attrition:.4f}")
-    print(classification_report(y_test, y_pred))
-
-
-# --------------------
-# 🔹 8. Escolha e Análise do Modelo Final
-# --------------------
-best_model_name = max(results, key=lambda k: results[k]['F1-Attrition'])
-best_model_info = results[best_model_name]
-best_model = best_model_info['Model']
-
-print("\n=======================================================")
-print(f"🏆 MODELO VENCEDOR (Melhor F1-Score na Classe 1): {best_model_name}")
-print(f"F1-Score (Attrition=Yes) no Teste: {best_model_info['F1-Attrition']:.4f}")
-print("=======================================================")
-
-# Se o modelo vencedor for baseado em árvores (Random Forest ou XGBoost), 
-# extraímos as Feature Importances
-if best_model_name in ["Random Forest", "XGBoost"]:
-    
-    if hasattr(best_model, 'feature_importances_'):
-        importances = best_model.feature_importances_
-    elif hasattr(best_model, 'coef_'):
-        # Para modelos lineares, usamos coeficientes
-        importances = np.abs(best_model.coef_[0])
-    else:
-        importances = None
-
-    if importances is not None:
-        feature_importance_df = pd.DataFrame({
-            'Feature': feature_names,
-            'Importance': importances
-        }).sort_values(by='Importance', ascending=False)
-        
-        print("\n--- 🌟 Top 10 Fatores de Rotatividade (Feature Importances) ---")
-        print(feature_importance_df.head(10).to_string(index=False))
-
-# Fim do escopo do projeto: Limpeza, Feature Engineering, Seleção, Treinamento e Comparação.
+df_resultados = pd.DataFrame(resultados)
+print("📊 Comparação dos Modelos:")
+print(df_resultados.sort_values(by='ROC_AUC', ascending=False))

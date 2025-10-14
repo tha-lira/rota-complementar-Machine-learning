@@ -1,15 +1,5 @@
-# ----------------------------------------------------
-# ✨ Bibliotecas Importadas 
-# ----------------------------------------------------
-
 import pandas as pd
-import matplotlib.pyplot as plt
-import seaborn as sns
-import numpy as np
 from sklearn.preprocessing import LabelEncoder
-from sklearn.model_selection import train_test_split 
-from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
 
 # ----------------------------------------------------
 # 0. CARREGAR DADOS
@@ -77,42 +67,41 @@ for col in categorical_columns:
 print("\n--- ✅ DATAFRAME FINALMENTE LIMPO E CODIFICADO (df.info()) ---")
 df.info() 
 
-import os
-import seaborn as sns
-import matplotlib.pyplot as plt
+#----------------------------------------------------------------------------
 
-# Criar pasta de saída, se ainda não existir
-os.makedirs("figuras", exist_ok=True)
+# Codificação simples para análises
+le = LabelEncoder()
+categorical_columns = [
+    'BusinessTravel', 'Department', 'EducationField', 'Gender',
+    'JobRole', 'MaritalStatus', 'Attrition',
+    'AgeGroup', 'DistanceCategory'
+]
 
-# Dicionário com colunas e seus respectivos insights
-analises = {
-    'MonthlyIncome': 'Funcionários com salários mais baixos tendem a sair mais?',
-    'TotalWorkingYears': 'Profissionais com pouca experiência geral têm maior rotatividade?',
-    'JobRole': 'Alguns cargos são mais críticos (ex: vendas, call center)?',
-    'DistanceFromHome': 'Distância afeta a retenção?',
-    'BusinessTravel': 'Viagens frequentes aumentam a saída?'
-}
+for col in categorical_columns:
+    if df[col].dtype == 'object':
+        df[col] = le.fit_transform(df[col])
 
-# Loop para gerar e salvar os gráficos
-for coluna, insight in analises.items():
-    plt.figure(figsize=(8, 4))
+# 6.1 Média por Attrition
+media_por_attrition = df.groupby('Attrition')[['Age', 'MonthlyIncome', 'TotalWorkingYears', 'YearsAtCompany']].mean().round(2)
+print("\n📊 Média das variáveis numéricas por Attrition:")
+print(media_por_attrition)
 
-    if df[coluna].dtype == 'object' or str(df[coluna].dtype) == 'category':
-        # Gráfico de barras com taxa média de Attrition para variáveis categóricas
-        taxa_attrition = df.groupby(coluna)['Attrition'].mean().sort_values(ascending=False)
-        sns.barplot(x=taxa_attrition.index, y=taxa_attrition.values, palette='coolwarm')
-        plt.title(f'{coluna} vs Attrition\n💡 Insight: {insight}')
-        plt.ylabel('Taxa média de rotatividade')
-        plt.xticks(rotation=45, ha='right')
-    else:
-        # Gráfico de boxplot para variáveis numéricas
-        sns.boxplot(x='Attrition', y=coluna, data=df, palette='Set2')
-        plt.title(f'{coluna} vs Attrition\n💡 Insight: {insight}')
-        plt.xlabel('Attrition (0 = Não, 1 = Sim)')
-        plt.ylabel(coluna)
+# 6.2 Correlação com Attrition
+correlacoes = df.corr(numeric_only=True)['Attrition'].sort_values(ascending=False).round(2)
+print("\n🔗 Correlação das variáveis com Attrition:")
+print(correlacoes)
 
-    # Salvar o gráfico
-    filename = f"figuras/attrition_vs_{coluna.lower()}.png"
-    plt.tight_layout()
-    plt.savefig(filename, dpi=300, bbox_inches="tight")
-    plt.close()
+# 6.3 Rotatividade por tempo de empresa (faixas)
+df['YearsBin'] = pd.cut(df['YearsAtCompany'], bins=[0, 2, 5, 10, 20, 40], labels=['0-2', '3-5', '6-10', '11-20', '21+'])
+rotatividade_tempo = df.groupby('YearsBin')['Attrition'].agg(['count', 'sum'])
+rotatividade_tempo['Taxa (%)'] = (rotatividade_tempo['sum'] / rotatividade_tempo['count'] * 100).round(2)
+rotatividade_tempo.columns = ['Total', 'Desligados', 'Taxa (%)']
+print("\n⏳ Rotatividade por Tempo de Empresa:")
+print(rotatividade_tempo)
+
+# 6.4 Proporção de Attrition por Faixa Etária
+tabela_cruzada = pd.crosstab(df['AgeGroup'], df['Attrition'], normalize='index') * 100
+tabela_cruzada.columns = ['Ficaram (%)', 'Saíram (%)']
+print("\n📈 Proporção de Attrition por Faixa Etária:")
+print(tabela_cruzada.round(2))
+
