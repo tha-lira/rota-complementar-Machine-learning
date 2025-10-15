@@ -63,6 +63,7 @@ Adultos (31–45 anos) têm maior rotatividade, possivelmente devido a transiç�
 - Base utilizada: `rh_data.csv` com 4.410 colaboradores e 26 variáveis.  
 - Variável alvo: `Attrition` (0 = Ficou, 1 = Saiu).  
 - Tratamento de valores nulos: preenchimento de `NumCompaniesWorked` e `TotalWorkingYears` com mediana.  
+- Remoção das variaveis `EmployeeCount`, `StandardHours`,  `EmployeeID`, `Over18`       
 - Engenharia de atributos: criação das variáveis `AgeGroup`, `DistanceCategory` e `ManyCompaniesWorked` (binária para >3 empresas anteriores).  
 - Codificação: Label Encoding aplicado em variáveis categóricas.
 

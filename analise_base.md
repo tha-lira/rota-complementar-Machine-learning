@@ -4,9 +4,9 @@
 
 ### 2.1.1 🔵 Conectar/importar dados para outras ferramentas
 
-Nesta etapa inicial, o arquivo rh_data.csv foi importado utilizando a biblioteca pandas.
+Nesta etapa inicial, o arquivo `rh_data.csv` foi importado utilizando a biblioteca `pandas`.
 
-📊 A base original continha 24 variáveis (colunas) e 4.410 registros (linhas), cada um representando um funcionário.
+📊 A base original continha 26 variáveis (colunas) e 4.410 registros (linhas), cada um representando um funcionário.
 
 A seguir, apresentamos a descrição das variáveis que compõem a tabela:
 
@@ -56,7 +56,7 @@ Foram identificados valores ausentes nas colunas:
 | NumCompaniesWorked | 19          |
 | TotalWorkingYears  | 9           |
 
-✅ Ação: preenchimento dos valores nulos com a mediana de cada coluna, uma vez que a mediana é robusta contra valores extremos e representa melhor a tendência central dos dados neste contexto.
+✅ Ação: preenchimento dos valores nulos com a **mediana** de cada coluna, uma vez que a mediana é robusta contra valores extremos e representa melhor a tendência central dos dados neste contexto.
 
 🔎 **Valores Duplicados**
 
@@ -92,7 +92,7 @@ A variável Attrition está significativamente desbalanceada, o que impacta a es
 
 A base contém 8 variáveis categóricas essenciais para a análise da rotatividade. Todas passaram por verificação de consistência e ausência de valores nulos.
 
-Todas as variáveis categóricas foram convertidas para formato numérico utilizando Label Encoding (LabelEncoder do scikit-learn).
+Todas as variáveis categóricas foram convertidas para formato numérico utilizando `Label Encoding` (LabelEncoder do scikit-learn).
 
 🔎 **Analise das variáveis Numéricas (outliers)**
 
@@ -114,32 +114,30 @@ Resumo dos resultados:
 | YearsSinceLastPromotion | 2.19     | 3.22          | -4.50                 | 7.50                  | 321                    | Alguns funcionários sem promoções há bastante tempo                      |
 | YearsWithCurrManager    | 4.12     | 3.57          | -5.50                 | 14.50                 | 42                     | Variabilidade na relação com o gestor atual                              |
 
-✅ Ação: Durante a análise exploratória dos dados, foram identificados valores considerados outliers em algumas variáveis numéricas, tais como MonthlyIncome, TotalWorkingYears, TrainingTimesLastYear, entre outras.
+✅ Ação: Durante a análise exploratória dos dados, foram identificados valores considerados outliers em algumas variáveis numéricas, como MonthlyIncome, TotalWorkingYears e TrainingTimesLastYear.
 
-No entanto, para o desenvolvimento do modelo preditivo, optamos por utilizar o algoritmo XGBoost, que é baseado em árvores de decisão e reconhecidamente robusto à presença de outliers. Diferentemente de modelos lineares ou baseados em distância, o XGBoost não é significativamente afetado por valores extremos, pois utiliza regras de divisão para particionar os dados.
+Optamos por não removê-los, pois o modelo escolhido — `Random Forest` — é baseado em árvores de decisão e, portanto, **robusto à presença de outliers**.
+Diferentemente de modelos lineares, ele utiliza divisões baseadas em regras, o que reduz o impacto de valores extremos no desempenho.
 
-Dessa forma, decidimos manter as variáveis numéricas em sua forma original, sem realizar qualquer tratamento específico para outliers, preservando a integridade dos dados e evitando possíveis distorções decorrentes de transformações ou remoção de pontos.
+Ainda assim, reconhecemos que a presença de outliers pode contribuir para um leve sobreajuste (overfitting), dado o alto desempenho observado (acurácia de 97%). Em futuras iterações, seria interessante realizar testes complementares com validação cruzada e modelos regularizados, garantindo a generalização dos resultados.
 
-Essa abordagem visa garantir que o modelo possa capturar padrões importantes, incluindo informações relevantes que os valores extremos podem representar no contexto da rotatividade de funcionários.
+Apesar do excelente desempenho, foi mantida uma postura crítica quanto à possibilidade de overfitting, já que resultados muito altos em bases pequenas podem refletir uma adaptação excessiva do modelo ao conjunto de treino.
 
 🔎  **Verificar os tipos de dados**
 
 Foi utilizado o comando `df.dtypes` para listar os tipos de dados.
 
-- Variáveis Numéricas (16):
+- Variáveis Numéricas (13):
 
 | Variável                  | Descrição                                   |
 | ------------------------- | ------------------------------------------- |
 | `Age`                     | Idade do funcionário                        |
 | `DistanceFromHome`        | Distância da casa até o trabalho            |
 | `Education`               | Nível de escolaridade (1 a 5)               |
-| `EmployeeCount`           | Contagem de funcionários (valor fixo: 1)    |
-| `EmployeeID`              | ID do funcionário                           |
 | `JobLevel`                | Nível do cargo                              |
 | `MonthlyIncome`           | Renda mensal                                |
 | `NumCompaniesWorked`      | Nº de empresas em que já trabalhou          |
 | `PercentSalaryHike`       | Aumento percentual de salário               |
-| `StandardHours`           | Horas padrão (valor fixo: 8)                |
 | `StockOptionLevel`        | Nível de participação em ações              |
 | `TotalWorkingYears`       | Total de anos de experiência                |
 | `TrainingTimesLastYear`   | Nº de treinamentos realizados no último ano |
@@ -147,7 +145,7 @@ Foi utilizado o comando `df.dtypes` para listar os tipos de dados.
 | `YearsSinceLastPromotion` | Anos desde a última promoção                |
 | `YearsWithCurrManager`    | Anos com o atual gerente                    |
 
-- Variáveis Categóricas (8):
+- Variáveis Categóricas (7):
 
 | Variável         | Descrição                                 |
 | ---------------- | ------------------------------------------ |
@@ -165,11 +163,11 @@ Essa etapa garante avaliação do modelo em dados nunca vistos, simulando seu de
 
 ✅ Técnicas Utilizadas
 
-- Divisão: train_test_split (80% Treino, 20% Teste)
+- Divisão: `train_test_split` (80% Treino, 20% Teste)
 
-- Reprodutibilidade: random_state=42
+- Reprodutibilidade: `random_state=42`
 
-- Estratificação: stratify=y, mantendo a proporção da variável alvo.
+- Estratificação: `stratify=y`, mantendo a proporção da variável alvo.
 
 ✅ Resultado da Divisão
 

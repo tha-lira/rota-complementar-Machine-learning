@@ -31,8 +31,8 @@ print(df[['NumCompaniesWorked', 'TotalWorkingYears']].isnull().sum())
 # 2. REMOÇÃO DE COLUNAS
 # ----------------------------------------------------
 
-if 'Over18' in df.columns:
-    df.drop('Over18', axis=1, inplace=True)
+colunas_para_remover = ['Over18', 'EmployeeCount', 'StandardHours', 'EmployeeID']
+df.drop(columns=[col for col in colunas_para_remover if col in df.columns], inplace=True)
 
 # ----------------------------------------------------
 # 3. CRIAÇÃO DE NOVAS VARIÁVEIS (FEATURE ENGINEERING)
