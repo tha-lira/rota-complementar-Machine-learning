@@ -98,15 +98,12 @@ O modelo **Random Forest** apresentou o melhor desempenho geral, demonstrando:
  
 - A ausência de remoção de outliers **não compromete a performance**, dado que o modelo de árvore é robusto, mas pode influenciar a **interpretabilidade dos resultados**.
 
----
 
-## 🚀 9. Próximos Passos
+## 🔷 9.  Documentação Técnica
 
-- Implementar **validação cruzada (k-fold)** para melhor estimativa de performance.  
-- Testar **modelos de interpretabilidade**, como SHAP ou LIME.  
-- Criar um **dashboard interativo (Power BI ou Looker Studio)** para visualização das métricas de rotatividade.
+📌 [Preparação Base de Dados] 🔗(https://github.com/tha-lira/rota-complementar-Machine-learning/blob/main/analise_base.md)
+📌 [Análise Exploratórias] 🔗(https://github.com/tha-lira/rota-complementar-Machine-learning/blob/main/analise_exploratoria.md)
+📌 [Modelo ML] 🔗(https://github.com/tha-lira/rota-complementar-Machine-learning/blob/main/analise_modelo.md)
+📊 [Slides] 🔗(https://docs.google.com/presentation/d/1gVSU7oOd1wov7Zc3boXLTlrP_ucvWtxrTvDetCG601Y/edit?usp=sharing)
 
----
-
-## 📚 10. Estrutura do Projeto
 
